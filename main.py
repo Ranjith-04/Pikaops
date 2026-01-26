@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, TabbedContent, TabPane
 from textual.screen import Screen
@@ -33,6 +34,9 @@ class OpsCliApp(App):
     def action_toggle_dark(self) -> None:
         self.dark = not self.dark
 
-if __name__ == "__main__":
+def main():
     app = OpsCliApp()
     app.run()
+
+if __name__ == "__main__":
+    main()

@@ -120,20 +120,36 @@ class ProductionDashboard(Static):
             server_conf = next((s for s in config.get("servers", []) if s["name"] == server_name), None)
 
             if server_conf:
-                user = server_conf.get("user", "root")
-                cmd = f"ssh {user}@{server_ip}"
+        if event.button.id == "btn-ssh":
+            # Sanitize inputs to prevent command injection
+            import shlex
+            user = shlex.quote(server_conf.get("user", "root"))
+            server_ip = shlex.quote(server_ip)
+            
+            # Build SSH command
+            cmd = f"ssh {user}@{server_ip}"
+            
+            # Suspend TUI to run SSH
+            with self.app.suspend_application_mode():
+                import os
+                import platform
+                print(f"--- Connecting to {server_name} ({server_ip}) ---")
                 
-                with self.app.suspend_application_mode():
-                    import os
-                    import platform
-                    print(f"--- Connecting to {server_name} ({server_ip}) ---")
-                    try:
-                        if platform.system() == "Windows":
-                            os.system(cmd)
+                try:
+                    # Windows doesn't always support shlex.quote correctly for cmd.exe, 
+                    # but for SSH (which is likely OpenSSH on Windows), properly quoted args are safer.
+                    # Ideally on Windows we use subprocess.run, but os.system is simpler for TUI release.
+                    if platform.system() == "Windows":
+                        # Basic check for illegal chars on Windows since shlex is POSIX oriented
+                        # A simple allow-list regex might be better for Windows IPs
+                        if any(c in server_ip for c in "&|;<>"):
+                             print("Invalid characters in IP address.")
                         else:
-                            os.system(cmd)
-                    except Exception as e:
-                        print(f"SSH Launch Failed: {e}")
-                    
-                    print("\n--- Session End ---")
-                    input("Press Enter...")
+                             os.system(cmd)
+                    else:
+                        os.system(cmd)
+                except Exception as e:
+                    print(f"SSH Launch Failed: {e}")
+                
+                print("\n--- Session End ---")
+                input("Press Enter...")
