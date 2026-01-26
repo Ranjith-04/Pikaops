@@ -1,0 +1,189 @@
+Screen {
+    layout: vertical;
+}
+
+/* Splash Screen Styles */
+#splash-container {
+    align: center middle;
+    height: 100%;
+    content-align: center middle;
+    background: #121212; /* Deep Dark */
+}
+
+#logo {
+    color: #ffeb3b; /* Pikachu Yellow */
+    text-align: center;
+    margin-bottom: 2;
+}
+
+#boot_log {
+    text-align: center;
+    color: #ffeb3b;
+    text-style: bold;
+}
+
+/* Dashboard Grid Layout */
+/* Local Dashboard Grid Layout */
+LocalDashboard {
+    layout: grid;
+    grid-size: 2 3; 
+    grid-columns: 30% 1fr;
+    grid-rows: 15% 55% 30%;
+    background: #212121;
+}
+
+/* Widget Styles */
+#system-metrics {
+    column-span: 2;
+    border: heavy #ffeb3b; 
+    background: #2c2c2c;
+    color: #ffffff;
+    padding: 0 1;
+    layout: horizontal;
+    height: 100%; /* Ensure it fills row */
+}
+
+/* Apply width to the Widget classes themselves */
+#cpu-display, #ram-display, #disk-display, #net-display {
+    width: 1fr; /* Take equal quarters */
+    height: 100%;
+    align: center middle;
+    padding: 0 1;
+}
+
+#system-metrics .metric-label {
+    text-align: center;
+    color: #ff5252;
+    text-style: bold;
+    width: 100%;
+}
+
+#sidebar-container {
+    row-span: 2;
+    border: heavy #ffeb3b; 
+    background: #2c2c2c;
+    overflow-y: hidden;
+}
+
+#alerts-panel {
+    height: 30%;
+    border-bottom: solid #ffeb3b;
+    padding: 1;
+}
+
+#alerts-header {
+    width: 100%;
+    text-align: center;
+    background: #ff5252; /* Red Alert */
+    color: white;
+    text-style: bold;
+}
+
+#file-browser {
+    height: 70%;
+    background: #121212;
+    border-top: solid #ffeb3b;
+}
+
+#terminal-area {
+    border: heavy #ffeb3b;
+    background: #000000;
+    padding: 1;
+}
+
+#term-output {
+    height: 1fr;
+    border: solid #555555;
+    background: #121212;
+    padding: 1;
+    color: #00ff00; /* Classic Terminal Green Text pop */
+}
+
+#term-input {
+    dock: bottom;
+    border: wide #ffeb3b;
+    background: #121212;
+    color: #ffeb3b;
+}
+
+#process-panel {
+    border: heavy #ffeb3b;
+    background: #2c2c2c;
+}
+
+DataTable {
+    background: #2c2c2c;
+    color: #ffffff;
+}
+
+/* Explicit Metrics Visibility Styles */
+ProgressBar {
+    width: 100%;
+    height: 1; /* Ensure it takes space */
+    margin: 1 0;
+}
+
+Bar > .bar--bar {
+    color: #ffeb3b; /* Yellow Progress */
+    background: #555555; /* Grey Track */
+}
+
+Bar > .bar--complete {
+    color: #ff5252; /* Complete Color (if used) */
+}
+
+Sparkline {
+    width: 100%;
+    height: 3;
+    color: #50fa7b; /* Green Graph */
+    background: #2c2c2c;
+}
+
+Sparkline > .sparkline--min {
+    color: #444444;
+}
+
+Sparkline > .sparkline--max {
+    color: #ff5252;
+}
+
+/* Production Mode Styles */
+#prod-content {
+    height: 1fr;
+}
+#prod-list-area {
+    width: 70%;
+    border-right: solid #44475a;
+    padding: 1;
+}
+#prod-details {
+    width: 30%;
+    padding: 1;
+}
+#prod-actions {
+    height: auto;
+    margin-top: 1;
+}
+
+/* Testing Mode Styles */
+#test-output {
+    height: 1fr;
+    border: solid #6272a4;
+    background: #121212;
+    margin-top: 1;
+}
+
+.test-box {
+    width: 50%;
+    border: solid #ffeb3b;
+    padding: 1;
+}
+
+/* Settings Styles */
+#settings-form {
+    width: 50%;
+    align: center middle; 
+}
+#settings-form Input {
+    margin-bottom: 1;
+}

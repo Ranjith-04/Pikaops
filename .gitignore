@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Distribution / Builds
+build/
+dist/
+*.spec
+
+# IDEs
+.vscode/
+.idea/
+
+# Project Specific
+config.json
+debug_metrics.py
