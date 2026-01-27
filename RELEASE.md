@@ -12,9 +12,15 @@ We use `PyInstaller` to bundle the application into a single executable.
 2.  **Build**:
     Run the following command to bundle everything (including the CSS files):
     ```powershell
-    pyinstaller --noconfirm --onefile --windowed --name "PikaOps" --add-data "tui/styles.tcss;tui" --hidden-import="textual" main.py
+    pyinstaller --noconfirm --onefile --name "PikaOps" --add-data "tui/styles.tcss;tui" --hidden-import="textual" main.py
     ```
     *Note: The `--add-data` separator is `;` on Windows and `:` on Linux.*
+    *Note: Do not use `--windowed` as this is a TUI application that requires a terminal.*
+
+    **Alternative**: Run the included build script:
+    ```powershell
+    python build.py
+    ```
 
 3.  **Result**: 
     The `dist/PikaOps.exe` file is your portable application. You can upload this to GitHub Releases or distribute it directly.

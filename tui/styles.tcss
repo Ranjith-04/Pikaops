@@ -1,5 +1,6 @@
 Screen {
     layout: vertical;
+    background: #1a1a1a;
 }
 
 /* Splash Screen Styles */
@@ -7,18 +8,18 @@ Screen {
     align: center middle;
     height: 100%;
     content-align: center middle;
-    background: #121212; /* Deep Dark */
+    background: #1a1a1a;
 }
 
 #logo {
-    color: #ffeb3b; /* Pikachu Yellow */
+    color: #ffd600; /* Richer Yellow */
     text-align: center;
     margin-bottom: 2;
 }
 
 #boot_log {
     text-align: center;
-    color: #ffeb3b;
+    color: #ffd600;
     text-style: bold;
 }
 
@@ -29,26 +30,29 @@ LocalDashboard {
     grid-size: 2 3; 
     grid-columns: 30% 1fr;
     grid-rows: 15% 55% 30%;
-    background: #212121;
+    background: #1a1a1a;
+    grid-gutter: 1; /* Add space between grid items */
+    padding: 1;
 }
 
 /* Widget Styles */
 #system-metrics {
     column-span: 2;
-    border: heavy #ffeb3b; 
-    background: #2c2c2c;
-    color: #ffffff;
+    border: round #ffd600; 
+    background: #252525;
+    color: #e0e0e0;
     padding: 0 1;
     layout: horizontal;
-    height: 100%; /* Ensure it fills row */
+    height: 100%;
+    margin-bottom: 1;
 }
 
 /* Apply width to the Widget classes themselves */
 #cpu-display, #ram-display, #disk-display, #net-display {
-    width: 1fr; /* Take equal quarters */
+    width: 1fr;
     height: 100%;
     align: center middle;
-    padding: 0 1;
+    padding: 1;
 }
 
 #system-metrics .metric-label {
@@ -56,91 +60,96 @@ LocalDashboard {
     color: #ff5252;
     text-style: bold;
     width: 100%;
+    padding-bottom: 1;
 }
 
 #sidebar-container {
     row-span: 2;
-    border: heavy #ffeb3b; 
-    background: #2c2c2c;
+    border: round #ffd600; 
+    background: #252525;
     overflow-y: hidden;
+    margin-right: 1;
 }
 
 #alerts-panel {
     height: 30%;
-    border-bottom: solid #ffeb3b;
+    border-bottom: solid #444; /* Subtle separator */
     padding: 1;
 }
 
 #alerts-header {
     width: 100%;
     text-align: center;
-    background: #ff5252; /* Red Alert */
+    background: #d32f2f; /* Darker Red */
     color: white;
     text-style: bold;
+    margin-bottom: 1;
 }
 
 #file-browser {
     height: 70%;
-    background: #121212;
-    border-top: solid #ffeb3b;
+    background: #1e1e1e;
+    border-top: none;
+    padding: 1;
 }
 
 #terminal-area {
-    border: heavy #ffeb3b;
-    background: #000000;
+    border: round #ffd600;
+    background: #0d0d0d;
     padding: 1;
+    margin-bottom: 1;
 }
 
 #term-output {
     height: 1fr;
-    border: solid #555555;
-    background: #121212;
+    border: none;
+    background: #0d0d0d;
     padding: 1;
-    color: #00ff00; /* Classic Terminal Green Text pop */
+    color: #4caf50; /* Softer Terminal Green */
 }
 
 #term-input {
     dock: bottom;
-    border: wide #ffeb3b;
-    background: #121212;
-    color: #ffeb3b;
+    border: solid #ffd600;
+    background: #0d0d0d;
+    color: #ffd600;
 }
 
 #process-panel {
-    border: heavy #ffeb3b;
-    background: #2c2c2c;
+    border: round #ffd600;
+    background: #252525;
 }
 
 DataTable {
-    background: #2c2c2c;
-    color: #ffffff;
+    background: #252525;
+    color: #e0e0e0;
 }
 
 /* Explicit Metrics Visibility Styles */
 ProgressBar {
     width: 100%;
-    height: 1; /* Ensure it takes space */
+    height: 1;
     margin: 1 0;
 }
 
 Bar > .bar--bar {
-    color: #ffeb3b; /* Yellow Progress */
-    background: #555555; /* Grey Track */
+    color: #ffd600;
+    background: #444444;
 }
 
 Bar > .bar--complete {
-    color: #ff5252; /* Complete Color (if used) */
+    color: #ff5252;
 }
 
 Sparkline {
     width: 100%;
     height: 3;
-    color: #50fa7b; /* Green Graph */
-    background: #2c2c2c;
+    color: #69f0ae; /* Soft Green */
+    background: #252525;
 }
 
 Sparkline > .sparkline--min {
-    color: #444444;
+    color: #555555;
 }
 
 Sparkline > .sparkline--max {
@@ -153,7 +162,7 @@ Sparkline > .sparkline--max {
 }
 #prod-list-area {
     width: 70%;
-    border-right: solid #44475a;
+    border-right: solid #444;
     padding: 1;
 }
 #prod-details {
@@ -168,14 +177,14 @@ Sparkline > .sparkline--max {
 /* Testing Mode Styles */
 #test-output {
     height: 1fr;
-    border: solid #6272a4;
-    background: #121212;
+    border: round #6272a4;
+    background: #1a1a1a;
     margin-top: 1;
 }
 
 .test-box {
     width: 50%;
-    border: solid #ffeb3b;
+    border: round #ffd600;
     padding: 1;
 }
 

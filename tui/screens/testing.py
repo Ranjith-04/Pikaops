@@ -50,7 +50,17 @@ class TestingDashboard(Static):
             log.write(f"[red]Error: {e}[/red]")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        log = self.query_one("#test-output", RichLog)
+        
         if event.button.id == "btn-ping":
             inp = self.query_one("#ping-input", Input).value
             if inp:
                 asyncio.create_task(self.run_ping(inp))
+        
+        elif event.button.id == "btn-alert-cpu":
+            log.write("[bold red blink]CRITICAL: CPU USAGE > 90% (SIMULATED)[/]")
+            log.write("Compacting garbage... Done.")
+            
+        elif event.button.id == "btn-alert-disk":
+            log.write("[bold orange1]WARNING: Disk Space Low < 10% (SIMULATED)[/]")
+            log.write("Please clear temp files.")

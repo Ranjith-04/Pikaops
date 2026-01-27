@@ -14,7 +14,7 @@ dependencies = [
     "httpx>=0.20.0"
 ]
 authors = [
-  {name = "Lance", email = "lance@example.com"},
+  {name = "Lance", email = "granjithkumar2004@gmail.com"},
 ]
 
 [project.scripts]
