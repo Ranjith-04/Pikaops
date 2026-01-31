@@ -3,6 +3,36 @@ Screen {
     background: #1a1a1a;
 }
 
+/* SSH Dialog Modal */
+SSHDialog {
+    align: center middle;
+}
+
+#ssh-dialog {
+    padding: 1 2;
+    background: #252525;
+    border: thick #ffd600;
+    width: 60;
+    height: auto;
+}
+
+#ssh-title {
+    text-align: center;
+    text-style: bold;
+    margin-bottom: 2;
+    color: #ffd600;
+}
+
+#ssh-buttons {
+    margin-top: 2;
+    align: center middle;
+    height: auto;
+}
+
+#ssh-buttons Button {
+    margin: 0 1; 
+}
+
 /* Splash Screen Styles */
 #splash-container {
     align: center middle;
@@ -24,80 +54,107 @@ Screen {
 }
 
 /* Dashboard Grid Layout */
-/* Local Dashboard Grid Layout */
+/* Dashboard Grid Layout REMOVED - Using Flex now */
+/* Dashboard Grid Layout REMOVED - Using Flex now */
+TabbedContent {
+    height: 1fr;
+}
+
 LocalDashboard {
-    layout: grid;
-    grid-size: 2 3; 
-    grid-columns: 30% 1fr;
-    grid-rows: 15% 55% 30%;
-    background: #1a1a1a;
-    grid-gutter: 1; /* Add space between grid items */
+/* Metric Box Styles */
+.metric-box {
+    width: 1fr;
+    height: auto;
     padding: 1;
+    align: center middle;
 }
 
-/* Widget Styles */
-#system-metrics {
-    column-span: 2;
-    border: round #ffd600; 
-    background: #252525;
-    color: #e0e0e0;
-    padding: 0 1;
-    layout: horizontal;
-    height: 100%;
-    margin-bottom: 1;
-}
-
-/* Apply width to the Widget classes themselves */
 #cpu-display, #ram-display, #disk-display, #net-display {
     width: 1fr;
-    height: 100%;
-    align: center middle;
+    height: auto;
+}
+    background: #1a1a1a;
     padding: 1;
+    height: 1fr;
+    /* border: solid red; DEBUG BORDER REMOVED */
 }
 
-#system-metrics .metric-label {
-    text-align: center;
-    color: #ff5252;
-    text-style: bold;
+/* Remove debug label style */
+
+#debug-lbl {
+    background: white;
+    color: black;
     width: 100%;
-    padding-bottom: 1;
+    text-align: center;
 }
 
+/* Flex Container for Middle Section */
+#main-area {
+    height: 1fr;
+    width: 100%;
+}
+
+/* Sidebar Styles */
 #sidebar-container {
-    row-span: 2;
-    border: round #ffd600; 
-    background: #252525;
-    overflow-y: hidden;
+    width: 30%;
+    height: 100%;
     margin-right: 1;
 }
 
-#alerts-panel {
-    height: 30%;
-    border-bottom: solid #444; /* Subtle separator */
-    padding: 1;
+/* When collapsed, sidebar takes minimal space. When open, we might want to constrain it. */
+Collapsible {
+    padding: 0;
+    margin-bottom: 1;
+    border: none;
+    background: #1a1a1a;
 }
 
-#alerts-header {
-    width: 100%;
-    text-align: center;
-    background: #d32f2f; /* Darker Red */
-    color: white;
+Collapsible.-collapsed {
+    height: auto;
+}
+
+Collapsible.-expanded {
+    height: auto;
+    border: solid #444;
+}
+
+CollapsibleTitle {
+    color: #ffd600;
     text-style: bold;
-    margin-bottom: 1;
+    background: #252525;
+    padding: 0 1;
+}
+
+/* Adjust widgets inside collapsibles */
+#system-metrics {
+    layout: horizontal;
+    height: auto;
+    width: 100%; /* Force full width */
+    min-height: 10;
+    padding: 0 1;
+    background: #252525;
+}
+
+#alerts-panel {
+    height: 15; /* Fixed height inside sidebar */
+    padding: 1;
+    background: #252525;
+    border-bottom: solid #444;
 }
 
 #file-browser {
-    height: 70%;
+    height: 30; /* Fixed height inside sidebar */
     background: #1e1e1e;
-    border-top: none;
     padding: 1;
 }
 
 #terminal-area {
+    width: 1fr;
+    height: 100%;
     border: round #ffd600;
     background: #0d0d0d;
     padding: 1;
-    margin-bottom: 1;
+    layout: vertical;
 }
 
 #term-output {
@@ -105,7 +162,7 @@ LocalDashboard {
     border: none;
     background: #0d0d0d;
     padding: 1;
-    color: #4caf50; /* Softer Terminal Green */
+    color: #4caf50;
 }
 
 #term-input {
@@ -174,6 +231,41 @@ Sparkline > .sparkline--max {
     margin-top: 1;
 }
 
+/* Docker Mode Styles */
+#docker-content {
+    height: 1fr;
+    padding: 1;
+}
+
+#docker-header {
+    text-align: center;
+    color: #448aff; /* Friendly Blue */
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#docker-table {
+    border: round #448aff;
+    margin-bottom: 1;
+    background: #1a1a1a;
+}
+
+#docker-actions {
+    height: auto;
+    align: center middle; 
+}
+
+#docker-actions Button {
+    margin: 0 1;
+}
+
+#docker-status-msg {
+    text-align: center;
+    height: 1;
+    margin-top: 1;
+    color: #e0e0e0;
+}
+
 /* Testing Mode Styles */
 #test-output {
     height: 1fr;
@@ -183,7 +275,7 @@ Sparkline > .sparkline--max {
 }
 
 .test-box {
-    width: 50%;
+    width: 33%;
     border: round #ffd600;
     padding: 1;
 }
@@ -195,4 +287,59 @@ Sparkline > .sparkline--max {
 }
 #settings-form Input {
     margin-bottom: 1;
+}
+
+/* Kubernetes Mode Styles */
+#k8s-content {
+    height: 1fr;
+    padding: 1;
+}
+
+#k8s-header {
+    text-align: center;
+    color: #326ce5; /* K8s Blue */
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#k8s-scripts-panel {
+    width: 40%;
+    border-right: solid #444;
+    padding-right: 1;
+}
+
+#k8s-right-panel {
+    width: 60%;
+    padding-left: 1;
+}
+
+#k8s-tunnel-panel {
+    height: auto;
+    border: round #326ce5;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+#k8s-tunnel-panel Input {
+    margin-bottom: 1;
+}
+
+.status-active {
+    color: #00ff00;
+    text-style: bold;
+}
+
+.status-inactive {
+    color: #555;
+}
+
+#k8s-output {
+    height: 1fr;
+    border: solid #555;
+    background: #0d0d0d;
+}
+
+#btn-run-script {
+    width: 100%;
+    margin-top: 1;
 }

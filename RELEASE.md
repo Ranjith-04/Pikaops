@@ -1,62 +1,53 @@
-# PikaOps Release Guide
+# Release Instructions
 
-## 1. Windows Release (.exe)
-We use `PyInstaller` to bundle the application into a single executable.
+This document describes how to build and release PikaOps CLI for Windows and Linux.
 
-### Build Steps
-1.  **Install PyInstaller**:
-    ```powershell
-    pip install pyinstaller
-    ```
+## Prerequisites
 
-2.  **Build**:
-    Run the following command to bundle everything (including the CSS files):
-    ```powershell
-    pyinstaller --noconfirm --onefile --name "PikaOps" --add-data "tui/styles.tcss;tui" --hidden-import="textual" main.py
-    ```
-    *Note: The `--add-data` separator is `;` on Windows and `:` on Linux.*
-    *Note: Do not use `--windowed` as this is a TUI application that requires a terminal.*
+-   Python 3.10+
+-   `pip install pyinstaller colorama textual psutil`
 
-    **Alternative**: Run the included build script:
+## 1. Windows Release
+
+We have included a build script (`build.py`) that automates the PyInstaller process on Windows.
+
+1.  Open PowerShell in the project root.
+2.  Run the build script:
     ```powershell
     python build.py
     ```
-
-3.  **Result**: 
-    The `dist/PikaOps.exe` file is your portable application. You can upload this to GitHub Releases or distribute it directly.
-
-## 2. Linux Release (APT / .deb)
-To create a `.deb` package to host in an APT repository.
-
-### prerequisites 
-(Run on a Linux machine or WSL)
-```bash
-sudo apt-get install python3-stdeb fakeroot python3-all-dev
-```
-
-### Build Steps
-1.  **Generate Source Package**:
-    ```bash
-    python3 setup.py --command-packages=stdeb.command sdist_dsc
+3.  The single-file executable will be generated at:
     ```
-
-2.  **Build .deb**:
-    ```bash
-    cd deb_dist/pikaops-2.0.0/
-    dpkg-buildpackage -rfakeroot -uc -us
+    dist/PikaOps.exe
     ```
+4.  **Test**: Run `dist/PikaOps.exe` to ensure it starts and all icons/styles load correctly.
 
-3.  **Result**:
-    You will have a `.deb` file in the `deb_dist` directory.
+## 2. Linux Release
 
-### Hosting in APT Repo
-1.  Create a repo directory.
-2.  Copy the `.deb` file there.
-3.  Run `dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz`.
-4.  Users can add your repo URL to their `sources.list`.
+To build a binary for Linux, you must run PyInstaller **on a Linux machine** (or WSL). Cross-compilation from Windows to Linux is generally not supported by PyInstaller.
 
-## 3. Cross-Platform Verify
-The codebase uses:
--   `#!/usr/bin/env python3` shebang for direct Linux execution.
--   `os.path.join` for file paths.
--   `platform.system()` checks to run the correct shell commands (SSH/Ping).
+1.  Clone the repo on your Linux machine.
+2.  Install dependencies:
+    ```bash
+    pip install -r requirements.txt pyinstaller
+    ```
+3.  Run the build command:
+    ```bash
+    pyinstaller --noconfirm --onefile --name PikaOps \
+      --add-data "tui/styles.tcss:tui" \
+      --hidden-import textual \
+      main.py
+    ```
+    *(Note: On Linux, the path separator for `--add-data` is `:`, whereas on Windows it is `;`)*
+
+4.  The binary will be at `dist/PikaOps`.
+5.  Make it executable: `chmod +x dist/PikaOps`
+
+## 3. GitHub Release
+
+1.  Tag the version (e.g., `v1.0.0`).
+2.  Create a "New Release" on GitHub.
+3.  Upload the artifacts:
+    -   `PikaOps.exe` (Windows)
+    -   `PikaOps` (Linux Binary)
+4.  Paste the contents of `RELEASE_NOTES.md` (or summarize changes) into the description.

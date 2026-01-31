@@ -5,11 +5,10 @@ import subprocess
 import asyncio
 import shlex
 
-class TerminalRunner(Static):
+class TerminalRunner(Vertical):
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield RichLog(id="term-output", highlight=True, markup=True)
-            yield Input(placeholder="Enter command (e.g. dir, ping google.com)...", id="term-input")
+        yield RichLog(id="term-output", highlight=True, markup=True)
+        yield Input(placeholder="Enter command (e.g. ls, Get-Process)...", id="term-input")
 
     BINDINGS = [
         ("tab", "autocomplete", "Autocomplete")
@@ -77,13 +76,25 @@ class TerminalRunner(Static):
         term_log = self.query_one("#term-output", RichLog)
         
         try:
-            # Need shell=True for extensive commands on Windows usually, but let's try clean execution first
-            # using shell=True specifically to allow built-ins like 'dir'
-            process = await asyncio.create_subprocess_shell(
-                command,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            import platform
+            is_windows = platform.system() == "Windows"
+            
+            if is_windows:
+                # Use PowerShell on Windows
+                # -NoProfile: Faster startup, avoid user profile noise
+                # -Command: Execute the command
+                process = await asyncio.create_subprocess_exec(
+                    "powershell", "-NoProfile", "-Command", command,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+            else:
+                # Use default shell on Linux/Mac
+                process = await asyncio.create_subprocess_shell(
+                    command,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
             
             stdout, stderr = await process.communicate()
             

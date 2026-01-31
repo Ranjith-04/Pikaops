@@ -57,31 +57,26 @@ class SystemMetrics(Static):
         self.set_interval(1.0, self.update_metrics)
 
     def update_metrics(self) -> None:
+        from utils.metrics import get_local_metrics
+        data = get_local_metrics()
+
         # Update CPU
-        cpu_pct = psutil.cpu_percent(interval=None) or 0
-        self.query_one("#cpu-display", CPUDisplay).update_cpu(cpu_pct)
+        self.query_one("#cpu-display", CPUDisplay).update_cpu(data["cpu"])
 
         # Update RAM
-        mem = psutil.virtual_memory()
-        used_gb = mem.used / (1024**3)
-        total_gb = mem.total / (1024**3)
-        self.query_one("#ram-display", RAMDisplay).update_ram(mem.percent, used_gb, total_gb)
+        mem = data["memory"]
+        self.query_one("#ram-display", RAMDisplay).update_ram(mem["percent"], mem["used_gb"], mem["total_gb"])
 
         # Update Disk
-        disk = psutil.disk_usage('/')
-        d_used = disk.used / (1024**3)
-        d_total = disk.total / (1024**3)
-        self.query_one("#disk-display", DiskDisplay).update_disk(disk.percent, d_used, d_total)
+        disk = data["disk"]
+        self.query_one("#disk-display", DiskDisplay).update_disk(disk["percent"], disk["used_gb"], disk["total_gb"])
 
-        # Update Network (Calculate Delta)
-        net = psutil.net_io_counters()
-        current_bytes = net.bytes_sent + net.bytes_recv
+        # Update Network
+        # The util returns total bytes, our Sparkline logic needs history.
+        # Ideally we'd move history tracking to the util too, but for now we keep state here.
+        current_bytes = data["network"]["bytes_total"]
         delta_bytes = current_bytes - self.last_net_bytes
         self.last_net_bytes = current_bytes
-        
-        # Normalize to some readable scale for the graph (KB/s approx) or just raw magnitude
-        # Sparkline autoscales, but large spikes flatten history. 
-        # Let's cap logical max or just append.
         
         self.net_history.pop(0)
         self.net_history.append(delta_bytes / 1024) # KB

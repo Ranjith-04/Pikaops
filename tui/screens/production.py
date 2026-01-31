@@ -14,6 +14,7 @@ class ProductionDashboard(Static):
                 yield DataTable(id="prod-server-table", cursor_type="row")
                 with Horizontal(id="prod-actions"):
                     yield Button("SSH Connect", id="btn-ssh", variant="primary")
+                    yield Button("Quick Connect", id="btn-quick-ssh", variant="warning")
                     # yield Button("Force Refresh", id="btn-poll", variant="warning") # Auto-polling now
             
             with Vertical(id="prod-details"):
@@ -58,97 +59,55 @@ class ProductionDashboard(Static):
         table = self.query_one("#prod-server-table", DataTable)
         metrics_view = self.query_one("#prod-metrics-view", Static)
         
+        from utils.metrics import get_remote_metrics
+        data = await get_remote_metrics(url)
+        
+        # Update Table Row
         try:
-            import httpx
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(url, timeout=3.0)
+            table.update_cell(name, "Status", data["status_style"])
+            table.update_cell(name, "Load", data["load"])
+            table.update_cell(name, "Mem Free", data["mem_free"])
+            
+            if data["status"] == "ERROR":
+                metrics_view.update(f"[red]Error fetching {name}: {data['error_msg']}[/]")
                 
-                if resp.status_code == 200:
-                    lines = resp.text.splitlines()
-                    # Robust parsing with defaults
-                    load1 = "-"
-                    mem_free = "-"
-                    
-                    try:
-                        load1 = next((l for l in lines if l.startswith("node_load1 ")), "0.0").split()[-1]
-                    except Exception:
-                        pass
-                        
-                    try:
-                        mem_bytes = next((l for l in lines if l.startswith("node_memory_MemFree_bytes ")), "0").split()[-1]
-                        mem_gb = float(mem_bytes) / (1024**3)
-                        mem_free = f"{mem_gb:.1f} GB"
-                    except Exception:
-                        mem_free = "Err"
-
-                    # Update Table Row (Thread-safe in Textual usually via call_from_thread if needed, but async is on main loop)
-                    # We match row by key (Name)
-                    try:
-                        # Columns: Name(0), IP(1), Status(2), Load(3), Mem(4)
-                        table.update_cell(name, "Status", "[green]ONLINE[/]")
-                        table.update_cell(name, "Load", load1)
-                        table.update_cell(name, "Mem Free", mem_free)
-                    except Exception as e:
-                        # Row might not exist if config changed rapidly
-                        pass
-                else:
-                    table.update_cell(name, "Status", f"[yellow]HTTP {resp.status_code}[/]")
-
-        except httpx.ConnectTimeout:
-             table.update_cell(name, "Status", "[red]TIMEOUT[/]")
-        except httpx.ConnectError:
-             table.update_cell(name, "Status", "[red]DOWN[/]")
-        except Exception as e:
-             # Catch-all for other parsing/network errors
-             table.update_cell(name, "Status", "[red]ERROR[/]")
-             metrics_view.update(f"[red]Error fetching {name}: {str(e)}[/]")
+        except Exception:
+            # Row might not exist if config changed rapidly
+            pass
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-ssh":
-            table = self.query_one("#prod-server-table", DataTable)
-            cursor_row = table.cursor_row
-            if cursor_row is None:
-                self.notify("Please select a server first.", severity="error")
-                return
+            self.handle_saved_ssh()
+        elif event.button.id == "btn-quick-ssh":
+            from tui.screens.ssh_dialog import SSHDialog
+            self.app.push_screen(SSHDialog(), self.handle_quick_ssh)
 
-            row_data = table.get_row_at(cursor_row)
-            server_name = row_data[0] # Name is first col
-            server_ip = row_data[1]
-            
-            from utils.config import load_config
-            config = load_config()
-            server_conf = next((s for s in config.get("servers", []) if s["name"] == server_name), None)
+    def handle_saved_ssh(self):
+        table = self.query_one("#prod-server-table", DataTable)
+        cursor_row = table.cursor_row
+        if cursor_row is None:
+            self.notify("Please select a server first.", severity="error")
+            return
 
-            if server_conf:
-                # Sanitize inputs to prevent command injection
-                import shlex
-                user = shlex.quote(server_conf.get("user", "root"))
-                server_ip = shlex.quote(server_ip)
-                
-                # Build SSH command
-                cmd = f"ssh {user}@{server_ip}"
-                
-                # Suspend TUI to run SSH
-                with self.app.suspend_application_mode():
-                    import os
-                    import platform
-                    print(f"--- Connecting to {server_name} ({server_ip}) ---")
-                    
-                    try:
-                        # Windows doesn't always support shlex.quote correctly for cmd.exe, 
-                        # but for SSH (which is likely OpenSSH on Windows), properly quoted args are safer.
-                        # Ideally on Windows we use subprocess.run, but os.system is simpler for TUI release.
-                        if platform.system() == "Windows":
-                            # Basic check for illegal chars on Windows since shlex is POSIX oriented
-                            # A simple allow-list regex might be better for Windows IPs
-                            if any(c in server_ip for c in "&|;<>"):
-                                 print("Invalid characters in IP address.")
-                            else:
-                                 os.system(cmd)
-                        else:
-                            os.system(cmd)
-                    except Exception as e:
-                        print(f"SSH Launch Failed: {e}")
-                    
-                    print("\n--- Session End ---")
-                    input("Press Enter...")
+        row_data = table.get_row_at(cursor_row)
+        server_name = row_data[0]
+        server_ip = row_data[1]
+        
+        from utils.config import load_config
+        config = load_config()
+        server_conf = next((s for s in config.get("servers", []) if s["name"] == server_name), None)
+
+        if server_conf:
+            user = server_conf.get("user", "root")
+            self.run_ssh_session(user, server_ip, server_name)
+
+    def handle_quick_ssh(self, result):
+        if result:
+            user, ip = result
+            self.run_ssh_session(user, ip, f"Interactive({ip})")
+
+    def run_ssh_session(self, user: str, ip: str, display_name: str):
+        with self.app.suspend_application_mode():
+            from utils.ssh import launch_ssh_session
+            launch_ssh_session(user, ip)
+            input("Press Enter to return...")
