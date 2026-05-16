@@ -1,3 +1,4 @@
+import httpx
 from textual.app import ComposeResult
 from textual.widgets import Static, Button, DataTable, Label
 from textual.containers import Vertical, Horizontal
@@ -44,23 +45,28 @@ class ProductionDashboard(Static):
         
         import httpx
         
-        # Poll all servers concurrently
-        for s in config.get("servers", []):
-            url = s.get("exporter_url")
-            name = s.get("name")
-            
-            if not url:
-                continue
+        # Poll all servers concurrently using a single client
+        async with httpx.AsyncClient() as client:
+            tasks = []
+            for s in config.get("servers", []):
+                url = s.get("exporter_url")
+                name = s.get("name")
 
-            # Run fetch in background task to avoid blocking
-            asyncio.create_task(self.fetch_server_metrics(name, url))
+                if not url:
+                    continue
 
-    async def fetch_server_metrics(self, name: str, url: str):
+                # Run fetch in background task to avoid blocking
+                tasks.append(asyncio.create_task(self.fetch_server_metrics(name, url, client=client)))
+
+            if tasks:
+                await asyncio.gather(*tasks)
+
+    async def fetch_server_metrics(self, name: str, url: str, client: httpx.AsyncClient = None):
         table = self.query_one("#prod-server-table", DataTable)
         metrics_view = self.query_one("#prod-metrics-view", Static)
         
         from utils.metrics import get_remote_metrics
-        data = await get_remote_metrics(url)
+        data = await get_remote_metrics(url, client=client)
         
         # Update Table Row
         try:

@@ -39,47 +39,50 @@ def get_local_metrics():
         }
     }
 
-async def get_remote_metrics(url: str, timeout: float = 3.0):
+async def get_remote_metrics(url: str, timeout: float = 3.0, client: httpx.AsyncClient = None):
     """
     Fetches and parses basic metrics (load1, mem_free) from a remote Prometheus-like exporter.
     Returns a dict with 'status', 'load', 'mem_free' or error details.
     """
     try:
-        async with httpx.AsyncClient() as client:
+        if client is None:
+            async with httpx.AsyncClient() as new_client:
+                resp = await new_client.get(url, timeout=timeout)
+        else:
             resp = await client.get(url, timeout=timeout)
             
-            if resp.status_code == 200:
-                lines = resp.text.splitlines()
-                load1 = "-"
-                mem_free_str = "-"
+        if resp.status_code == 200:
+            lines = resp.text.splitlines()
+            load1 = "-"
+            mem_free_str = "-"
+
+            # Parse Load
+            try:
+                load1 = next((l for l in lines if l.startswith("node_load1 ")), "0.0").split()[-1]
+            except Exception:
+                pass
                 
-                # Parse Load
-                try:
-                    load1 = next((l for l in lines if l.startswith("node_load1 ")), "0.0").split()[-1]
-                except Exception:
-                    pass
-                    
-                # Parse Memory
-                try:
-                    mem_bytes = next((l for l in lines if l.startswith("node_memory_MemFree_bytes ")), "0").split()[-1]
-                    mem_gb = float(mem_bytes) / (1024**3)
-                    mem_free_str = f"{mem_gb:.1f} GB"
-                except Exception:
-                    mem_free_str = "Err"
-                
-                return {
-                    "status": "ONLINE",
-                    "status_style": "[green]ONLINE[/]",
-                    "load": load1,
-                    "mem_free": mem_free_str
-                }
-            else:
-                return {
-                    "status": f"HTTP {resp.status_code}",
-                    "status_style": f"[yellow]HTTP {resp.status_code}[/]",
-                    "load": "-",
-                    "mem_free": "-"
-                }
+            # Parse Memory
+            try:
+                mem_bytes = next((l for l in lines if l.startswith("node_memory_MemFree_bytes ")), "0").split()[-1]
+                mem_gb = float(mem_bytes) / (1024**3)
+                mem_free_str = f"{mem_gb:.1f} GB"
+            except Exception:
+                mem_free_str = "Err"
+
+            return {
+                "status": "ONLINE",
+                "status_style": "[green]ONLINE[/]",
+                "load": load1,
+                "mem_free": mem_free_str
+            }
+        else:
+            return {
+                "status": f"HTTP {resp.status_code}",
+                "status_style": f"[yellow]HTTP {resp.status_code}[/]",
+                "load": "-",
+                "mem_free": "-"
+            }
 
     except httpx.ConnectTimeout:
          return {
