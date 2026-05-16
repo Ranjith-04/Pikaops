@@ -30,7 +30,8 @@ class ProductionDashboard(Static):
 
     def refresh_servers(self):
         from utils.config import load_config
-        config = load_config()
+        self._cached_config = load_config()
+        config = self._cached_config
         table = self.query_one("#prod-server-table", DataTable)
         table.clear()
         for s in config.get("servers", []):
@@ -38,8 +39,10 @@ class ProductionDashboard(Static):
             table.add_row(s["name"], s["ip"], "Pending", "-", "-", key=s["name"])
 
     async def auto_poll_metrics(self):
-        from utils.config import load_config
-        config = load_config()
+        if not hasattr(self, "_cached_config"):
+            from utils.config import load_config
+            self._cached_config = load_config()
+        config = self._cached_config
         table = self.query_one("#prod-server-table", DataTable)
         
         import httpx
@@ -93,8 +96,10 @@ class ProductionDashboard(Static):
         server_name = row_data[0]
         server_ip = row_data[1]
         
-        from utils.config import load_config
-        config = load_config()
+        if not hasattr(self, "_cached_config"):
+            from utils.config import load_config
+            self._cached_config = load_config()
+        config = self._cached_config
         server_conf = next((s for s in config.get("servers", []) if s["name"] == server_name), None)
 
         if server_conf:
