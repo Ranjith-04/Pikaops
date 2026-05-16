@@ -12,7 +12,7 @@ def launch_ssh_session(user: str, ip: str, port: int = 22):
     safe_ip = shlex.quote(ip)
     
     # Build SSH command
-    cmd = f"ssh {safe_user}@{safe_ip} -p {port}"
+    cmd = f"ssh -p {port} -- {safe_user}@{safe_ip}"
     
     print(f"--- Connecting to {safe_user}@{safe_ip} ---")
     
