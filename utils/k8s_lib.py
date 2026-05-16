@@ -56,7 +56,7 @@ async def start_tunnel(user: str, ip: str, local_port: int = 6443, remote_port: 
         
     cmd = [
         "ssh", "-L", f"{local_port}:127.0.0.1:{remote_port}", 
-        f"{user}@{ip}", "-N" # -N means no remote command (just forward)
+        "-N", "--", f"{user}@{ip}"
     ]
     
     try:
