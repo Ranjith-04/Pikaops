@@ -21,10 +21,9 @@ class ProcessMonitor(Static):
         
         # Get top 20 processes by CPU
         procs = []
-        for p in psutil.process_iter(['pid', 'name', 'status', 'cpu_percent', 'memory_percent']):
+        for p in psutil.process_iter():
             try:
-                p.info['cpu_percent'] # Trigger lazy load
-                procs.append(p.info)
+                procs.append(p.as_dict(attrs=['pid', 'name', 'status', 'cpu_percent', 'memory_percent']))
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
         
