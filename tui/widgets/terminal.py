@@ -89,9 +89,16 @@ class TerminalRunner(Vertical):
                     stderr=asyncio.subprocess.PIPE
                 )
             else:
-                # Use default shell on Linux/Mac
-                process = await asyncio.create_subprocess_shell(
-                    command,
+                # Use shlex to safely split command and avoid shell injection
+                try:
+                    args = shlex.split(command)
+                except ValueError as ve:
+                    term_log.write(f"[red]Parse error: {ve}[/]")
+                    return
+                if not args:
+                    return
+                process = await asyncio.create_subprocess_exec(
+                    *args,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE
                 )
