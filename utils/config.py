@@ -1,5 +1,6 @@
 import json
 import os
+import copy
 
 CONFIG_PATH = "config.json"
 
@@ -11,20 +12,39 @@ DEFAULT_CONFIG = {
     "theme": "pika"
 }
 
+_cached_config = None
+_last_mtime = 0
+
 def load_config():
+    global _cached_config, _last_mtime
+
     if not os.path.exists(CONFIG_PATH):
         save_config(DEFAULT_CONFIG)
-        return DEFAULT_CONFIG
+        return copy.deepcopy(DEFAULT_CONFIG)
     
     try:
+        current_mtime = os.path.getmtime(CONFIG_PATH)
+        if _cached_config is not None and current_mtime == _last_mtime:
+            return copy.deepcopy(_cached_config)
+
         with open(CONFIG_PATH, "r") as f:
-            return json.load(f)
+            _cached_config = json.load(f)
+            _last_mtime = current_mtime
+            return copy.deepcopy(_cached_config)
     except Exception:
-        return DEFAULT_CONFIG
+        return copy.deepcopy(DEFAULT_CONFIG)
 
 def save_config(config):
+    global _cached_config, _last_mtime
+
     with open(CONFIG_PATH, "w") as f:
         json.dump(config, f, indent=4)
+
+    _cached_config = copy.deepcopy(config)
+    try:
+        _last_mtime = os.path.getmtime(CONFIG_PATH)
+    except OSError:
+        _last_mtime = 0
 
 def add_server(name, ip, user, exporter_url):
     config = load_config()
