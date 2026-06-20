@@ -1,5 +1,5 @@
 from textual.app import ComposeResult
-from textual.widgets import Input, RichLog, Static
+from textual.widgets import Input, RichLog
 from textual.containers import Vertical
 import subprocess
 import asyncio
