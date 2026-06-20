@@ -1,5 +1,5 @@
 from textual.app import ComposeResult
-from textual.widgets import Static, DataTable, Button, Label, Header, Footer
+from textual.widgets import Static, DataTable, Button, Label, Footer
 from textual.containers import Vertical, Horizontal
 import asyncio
 from utils.docker_lib import list_containers, manage_container
