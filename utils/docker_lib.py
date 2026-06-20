@@ -48,6 +48,9 @@ async def manage_container(container_id: str, action: str):
     if action not in valid_actions:
         return False, "Invalid action"
         
+    if not container_id.isalnum():
+        return False, "Invalid container ID"
+
     cmd = ["docker", action, container_id]
     
     try:
