@@ -1,5 +1,5 @@
 from textual.app import ComposeResult
-from textual.widgets import Static, Collapsible, Label
+from textual.widgets import Static, Collapsible
 from tui.widgets.metrics import SystemMetrics
 from tui.widgets.terminal import TerminalRunner
 from tui.widgets.processes import ProcessMonitor
