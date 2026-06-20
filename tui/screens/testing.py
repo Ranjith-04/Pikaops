@@ -83,18 +83,21 @@ class TestingDashboard(Static):
         log = self.query_one("#test-output", RichLog)
         log.write(f"[cyan]Scanning {host} ports {start_port}-{end_port}...[/]")
         
-        open_ports = []
-        for port in range(start_port, end_port + 1):
+        async def check_port(port):
             try:
                 reader, writer = await asyncio.wait_for(
                     asyncio.open_connection(host, port), timeout=0.1
                 )
                 writer.close()
                 await writer.wait_closed()
-                open_ports.append(port)
                 log.write(f"[green]Port {port} is OPEN[/]")
+                return port
             except:
-                pass
+                return None
+
+        tasks = [check_port(port) for port in range(start_port, end_port + 1)]
+        results = await asyncio.gather(*tasks)
+        open_ports = [p for p in results if p is not None]
         
         if not open_ports:
             log.write("[yellow]No open ports found in range.[/]")
