@@ -1,8 +1,8 @@
 from textual.app import ComposeResult
-from textual.widgets import Static, DataTable, Button, Label, Input, RichLog
+from textual.widgets import Static, DataTable, Button, Label, Input, RichLog, Checkbox
 from textual.containers import Vertical, Horizontal
 import asyncio
-from utils.k8s_lib import list_k8s_scripts, run_script, start_tunnel, stop_tunnel, is_tunnel_active
+from utils.k8s_lib import list_k8s_scripts, run_script, start_tunnel, stop_tunnel, is_tunnel_active, check_local_k8s
 
 class KubernetesDashboard(Static):
     def compose(self) -> ComposeResult:
@@ -19,6 +19,8 @@ class KubernetesDashboard(Static):
             with Vertical(id="k8s-right-panel"):
                 with Vertical(id="k8s-tunnel-panel"):
                     yield Label("Cluster Tunnel (6443 -> 127.0.0.1:6443)", classes="section-title")
+                    yield Label("Local K8s: Checking...", id="k8s-local-status")
+                    yield Checkbox("Use SSH Tunnel", id="k8s-use-tunnel", value=False)
                     yield Input(placeholder="User (e.g. root)", id="tunnel-user")
                     yield Input(placeholder="Remote IP", id="tunnel-ip")
                     yield Button("Start Tunnel", id="btn-tunnel", variant="warning")
@@ -32,6 +34,16 @@ class KubernetesDashboard(Static):
         table = self.query_one("#k8s-script-table", DataTable)
         table.add_columns("Script Name")
         self.refresh_scripts()
+        asyncio.create_task(self.check_k8s_status())
+
+    async def check_k8s_status(self):
+        is_local = await check_local_k8s()
+        lbl = self.query_one("#k8s-local-status", Label)
+        if is_local:
+            lbl.update("[green]Local K8s: Detected[/]")
+        else:
+            lbl.update("[red]Local K8s: Not Detected[/]")
+            self.query_one("#k8s-use-tunnel", Checkbox).value = True
 
     def refresh_scripts(self):
         table = self.query_one("#k8s-script-table", DataTable)
@@ -45,10 +57,15 @@ class KubernetesDashboard(Static):
         
         if event.button.id == "btn-run-script":
             table = self.query_one("#k8s-script-table", DataTable)
-            if table.cursor_row is None:
+            if table.row_count == 0 or table.cursor_row is None or not table.is_valid_row_index(table.cursor_row):
                 self.notify("Select a script first.", severity="error")
                 return
             
+            use_tunnel = getattr(self.query_one("#k8s-use-tunnel", Checkbox), "value", False)
+            if use_tunnel and not is_tunnel_active():
+                self.notify("SSH Tunnel is required but not active.", severity="error")
+                return
+
             script = table.get_row_at(table.cursor_row)[0]
             output.write(f"[yellow]Running {script}...[/]")
             

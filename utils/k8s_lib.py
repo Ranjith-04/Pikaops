@@ -88,3 +88,21 @@ async def stop_tunnel():
 def is_tunnel_active():
     global TUNNEL_PROCESS
     return TUNNEL_PROCESS is not None and TUNNEL_PROCESS.returncode is None
+
+async def check_local_k8s() -> bool:
+    """Checks if a local kubernetes cluster is running and accessible using kubectl."""
+    import shutil
+    if not shutil.which("kubectl"):
+        return False
+        
+    cmd = ["kubectl", "cluster-info"]
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        _, _ = await proc.communicate()
+        return proc.returncode == 0
+    except Exception:
+        return False

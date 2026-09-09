@@ -82,8 +82,8 @@ class DockerDashboard(Static):
         table = self.query_one("#docker-table", DataTable)
         status_lbl = self.query_one("#docker-status-msg", Label)
         
-        if table.cursor_row is None:
-            self.notify("No container selected", severity="error")
+        if table.row_count == 0 or table.cursor_row is None or not table.is_valid_row_index(table.cursor_row):
+            self.notify("No container selected or table is empty", severity="error")
             return
             
         row = table.get_row_at(table.cursor_row)
