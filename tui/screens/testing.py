@@ -2,6 +2,7 @@ from textual.app import ComposeResult
 from textual.widgets import Static, Button, Input, RichLog, Label
 from textual.containers import Vertical, Horizontal
 import asyncio
+import re
 
 class TestingDashboard(Static):
     def compose(self) -> ComposeResult:
@@ -30,9 +31,9 @@ class TestingDashboard(Static):
     async def run_ping(self, host):
         log = self.query_one("#test-output", RichLog)
         
-        # Sanitize host input (basic check)
-        if any(c in host for c in ";|&"):
-            log.write("[red]Invalid characters in hostname[/red]")
+        # Sanitize host input strictly to prevent command injection
+        if not re.match(r"^[a-zA-Z0-9.:-]+$", host) or host.startswith("-"):
+            log.write("[red]Invalid hostname format[/red]")
             return
 
         log.write(f"[yellow]Pinging {host}...[/yellow]")
